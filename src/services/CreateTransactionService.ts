@@ -19,10 +19,16 @@ class CreateTransactionService {
     type,
     categoryName,
   }: Request): Promise<Transaction> {
-    //check income / outcome and balance
-
     const categoriesRepository = getRepository(Category);
     const transactionsRepository = getCustomRepository(TransactionsRepository);
+
+    const balance = await transactionsRepository.getBalance();
+
+    if (type == 'outcome' && value > balance.total) {
+      throw new AppError(
+        'insuficcient funds'
+      );
+    }
 
     let category = await categoriesRepository.findOne({
       where: { title: categoryName }
